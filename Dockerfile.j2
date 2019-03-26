@@ -1,0 +1,10 @@
+FROM alpine:latest
+
+ENTRYPOINT ["/usr/local/bin/saltinit"]
+USER salt
+
+RUN adduser -D salt
+RUN apk install --update python3-dev gcc g++ autoconf make libffi-dev openssl-dev && \
+    pip3 install pip-tools pycryptodomex
+
+ADD saltinit.py /usr/local/bin/saltinit
