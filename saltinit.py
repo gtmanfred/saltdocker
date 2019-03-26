@@ -6,23 +6,24 @@ import signal
 
 
 async def main():
-    with open('/etc/salt/master.d/api.conf', 'w') as apifile:
-        if 'SALT_API_CONFIG' in os.environ:
-            json.dump(json.loads(os.environ['SALT_API_CONFIG']), apifile)
-        else:
-            json.dump({
-                'rest_cherrypy': {
-                    'port': 8000,
-                    'ssl_crt': '/etc/pki/tls/certs/localhost.crt',
-                    'ssl_key': '/etc/pki/tls/certs/localhost.key',
-                },
-                'external_auth': {
-                    'sharedsecret': { 
-                        'salt': ['.*', '@wheel', '@jobs', '@runner'],
+    if not os.path.exists('/etc/salt/master.d/api.conf'):
+        with open('/etc/salt/master.d/api.conf', 'w') as apifile:
+            if 'SALT_API_CONFIG' in os.environ:
+                json.dump(json.loads(os.environ['SALT_API_CONFIG']), apifile)
+            else:
+                json.dump({
+                    'rest_cherrypy': {
+                        'port': 8000,
+                        'ssl_crt': '/etc/pki/tls/certs/localhost.crt',
+                        'ssl_key': '/etc/pki/tls/certs/localhost.key',
                     },
-                },
-                'sharedsecret': os.environ.get('SALT_SHARED_SECRET', 'supersecret'),
-            }, apifile)
+                    'external_auth': {
+                        'sharedsecret': { 
+                            'salt': ['.*', '@wheel', '@jobs', '@runner'],
+                        },
+                    },
+                    'sharedsecret': os.environ.get('SALT_SHARED_SECRET', 'supersecret'),
+                }, apifile)
 
     if 'SALT_MASTER_CONFIG' in os.environ:
         with open('/etc/salt/master.d/master.conf', 'w') as apifile:

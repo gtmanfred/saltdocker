@@ -24,7 +24,7 @@ class SaltVersion(object):
     def __init__(self, version):
         self.version = version
 
-    async def __call__(self, force=False):
+    async def __call__(self, force=False, latest=False):
         try:
             tmpfile = tempfile.mkstemp()
             with open(tmpfile[1], 'w') as dfile:
@@ -38,6 +38,11 @@ class SaltVersion(object):
 
             if force is True:
                 args.append('--no-cache')
+            
+            if latest is True:
+                args.extend([
+                    '--tag', 'gtmanfred/saltstack:latest',
+                ])
 
             args.extend([
                 '--tag', f'gtmanfred/saltstack:{self.version}',
@@ -47,6 +52,12 @@ class SaltVersion(object):
 
             proc = await asyncio.create_subprocess_exec(*args, loop=self.loop)
             await proc.communicate()
+
+            for tag in [f'gtmanfred/saltstack:{self.version}', f'gtmanfred/saltstack:{self.version}-{self.date}', 'latest']:
+                if tag == 'latest' and latest is not True:
+                    continue
+                proc = await asyncio.create_subprocess_exec('docker', 'push', tag)
+                await proc.communicate()
         finally:
             os.chdir(cwd)
             os.unlink(tmpfile[1])
@@ -69,9 +80,10 @@ class SaltVersion(object):
         versions = sorted(filter(check_version, map(distutils.version.LooseVersion, data['releases'])))
         for idx, version in enumerate(versions):
             if idx == 0:
-                await SaltVersion(version)(force=False)
+                await SaltVersion(version)(force=True)
             else:
-                cls.versions.append(cls.loop.create_task(cls(version)()))
+                latest = version == versions[-1]
+                cls.versions.append(cls.loop.create_task(cls(version)(latest=latest)))
         await asyncio.gather(*cls.versions, loop=cls.loop)
 
 
