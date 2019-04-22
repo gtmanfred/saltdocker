@@ -7,6 +7,7 @@ import signal
 import tempfile
 
 import aiohttp
+import click
 import jinja2
 
 MINVER = distutils.version.LooseVersion('2017.7.0')
@@ -53,6 +54,8 @@ class SaltVersion(object):
             proc = await asyncio.create_subprocess_exec(*args, loop=self.loop)
             await proc.communicate()
 
+            if not self.push:
+                return
             for tag in [f'gtmanfred/saltstack:{self.version}', f'gtmanfred/saltstack:{self.version}-{self.date}', 'latest']:
                 if tag == 'latest' and latest is not True:
                     continue
@@ -63,7 +66,8 @@ class SaltVersion(object):
             os.unlink(tmpfile[1])
 
     @classmethod
-    async def build_salt_images(cls):
+    async def build_salt_images(cls, push):
+        cls.push = push
         async with aiohttp.ClientSession() as session:
             async with session.get('https://pypi.org/pypi/salt/json') as response:
                 data = await response.json()
@@ -87,12 +91,14 @@ class SaltVersion(object):
         await asyncio.gather(*cls.versions, loop=cls.loop)
 
 
-def main():
+@click.command()
+@click.option("--push", is_flag=True, help="Push to hub.docker.io")
+def main(push):
     loop = asyncio.get_event_loop()
     for signame in {'SIGINT', 'SIGTERM'}:
         loop.add_signal_handler(getattr(signal, signame), loop.stop)
     try:
-        loop.run_until_complete(SaltVersion.build_salt_images())
+        loop.run_until_complete(SaltVersion.build_salt_images(push=push))
     finally:
         loop.close()
 

@@ -8,6 +8,7 @@ authors = ["Daniel Wallace <danielwallace@gtmanfred.com>"]
 python = "^3.7"
 jinja2 = "^2.10"
 aiohttp = "^3.5"
+click = "^7.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
