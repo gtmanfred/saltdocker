@@ -1,0 +1,16 @@
+sudo: false
+services:
+- docker
+language: python
+cache: pip
+services:
+- docker
+
+install:
+- poetry install
+
+python:
+- '3.7-dev'
+
+script:
+- python -m saltdocker
