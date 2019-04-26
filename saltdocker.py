@@ -20,12 +20,12 @@ class SaltVersion(object):
 
     loop = asyncio.get_event_loop()
     versions = []
-    date = datetime.datetime.utcnow().strftime("%Y%M%d")
+    date = datetime.datetime.utcnow().strftime("%Y%m%d")
 
     def __init__(self, version):
         self.version = version
 
-    async def __call__(self, force=False, latest=False):
+    async def build(self, force=False, latest=False):
         try:
             tmpfile = tempfile.mkstemp()
             with open(tmpfile[1], 'w') as dfile:
@@ -54,40 +54,47 @@ class SaltVersion(object):
             proc = await asyncio.create_subprocess_exec(*args, loop=self.loop)
             await proc.communicate()
 
-            if not self.push:
-                return
-            for tag in [f'saltstack/salt:{self.version}', f'saltstack/salt:{self.version}-{self.date}', 'saltstack/salt:latest']:
-                if tag == 'latest' and latest is not True:
-                    continue
-                proc = await asyncio.create_subprocess_exec('docker', 'push', tag)
-                await proc.communicate()
         finally:
             os.chdir(cwd)
             os.unlink(tmpfile[1])
 
+    async def push(self, latest=False):
+        for tag in [f'saltstack/salt:{self.version}', f'saltstack/salt:{self.version}-{self.date}', 'saltstack/salt:latest']:
+            if tag == 'latest' and latest is not True:
+                continue
+            proc = await asyncio.create_subprocess_exec('docker', 'push', tag)
+            await proc.communicate()
+
     @classmethod
-    async def build_salt_images(cls, push):
+    def _check_version(cls, version):
+        if version < MINVER or 'rc' in version.version:
+            return False
+        if [
+                v for v in cls.data['releases']
+                if distutils.version.LooseVersion(v).version[:-1] == version.version[:-1] and
+                    distutils.version.LooseVersion(v) > version
+        ]:
+            return False
+        return True
+
+    @classmethod
+    async def build_salt_images(cls, push=False):
         cls.push = push
         async with aiohttp.ClientSession() as session:
             async with session.get('https://pypi.org/pypi/salt/json') as response:
-                data = await response.json()
-        def check_version(version):
-            if version < MINVER or 'rc' in version.version:
-                return False
-            if [
-                    v for v in data['releases']
-                    if distutils.version.LooseVersion(v).version[:-1] == version.version[:-1] and
-                       distutils.version.LooseVersion(v) > version
-            ]:
-                return False
-            return True
-        versions = sorted(filter(check_version, map(distutils.version.LooseVersion, data['releases'])))
-        for idx, version in enumerate(versions):
-            if idx == 0:
-                await SaltVersion(version)(force=True)
-            else:
-                latest = version == versions[-1]
-                cls.versions.append(cls.loop.create_task(cls(version)(latest=latest)))
+                cls.data = await response.json()
+        versions = sorted(filter(cls._check_version, map(distutils.version.LooseVersion, cls.data['releases'])))
+        if push is False:
+            for idx, version in enumerate(versions):
+                if idx == 0:
+                    await SaltVersion(version).build(force=True)
+                else:
+                    latest = version == versions[-1]
+                    cls.versions.append(cls.loop.create_task(cls(version).build(latest=latest)))
+        else:
+            for idx, version in enumerate(versions):
+                    latest = version == versions[-1]
+                    cls.versions.append(cls.loop.create_task(cls(version).push(latest=latest)))
         await asyncio.gather(*cls.versions, loop=cls.loop)
 
 
