@@ -42,12 +42,12 @@ class SaltVersion(object):
             
             if latest is True:
                 args.extend([
-                    '--tag', 'gtmanfred/saltstack:latest',
+                    '--tag', 'saltstack/salt:latest',
                 ])
 
             args.extend([
-                '--tag', f'gtmanfred/saltstack:{self.version}',
-                '--tag', f'gtmanfred/saltstack:{self.version}-{self.date}',
+                '--tag', f'saltstack/salt:{self.version}',
+                '--tag', f'saltstack/salt:{self.version}-{self.date}',
                 PATH
             ])
 
@@ -56,7 +56,7 @@ class SaltVersion(object):
 
             if not self.push:
                 return
-            for tag in [f'gtmanfred/saltstack:{self.version}', f'gtmanfred/saltstack:{self.version}-{self.date}', 'gtmanfred/saltstack:latest']:
+            for tag in [f'saltstack/salt:{self.version}', f'saltstack/salt:{self.version}-{self.date}', 'saltstack/salt:latest']:
                 if tag == 'latest' and latest is not True:
                     continue
                 proc = await asyncio.create_subprocess_exec('docker', 'push', tag)
