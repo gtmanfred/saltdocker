@@ -1,8 +1,8 @@
 # Supported tags and respective `Dockerfile` links
 
-- [`2019.2.0`, `2019.2`, `latest`](https://github.com/gtmanfred/saltdocker/tree/master/Dockerfile.j2)
-- [`2018.3.4`, `2018.3`](https://github.com/gtmanfred/saltdocker/tree/master/Dockerfile.j2)
-- [`2017.7.8`, `2017.7`](https://github.com/gtmanfred/saltdocker/tree/master/Dockerfile.j2)
+- [`2019.2.0`, `2019.2`, `latest`](https://github.com/saltstack/saltdocker/tree/master/Dockerfile.j2)
+- [`2018.3.4`, `2018.3`](https://github.com/saltstack/saltdocker/tree/master/Dockerfile.j2)
+- [`2017.7.8`, `2017.7`](https://github.com/saltstack/saltdocker/tree/master/Dockerfile.j2)
 
 # What is SaltStack?
 
@@ -17,7 +17,7 @@ This image contains a running salt-master and salt-api process, which can be use
 ## start a salt instance
 
 ```console
-$ docker run --name salt --hostname salt -P -e SALT_SHARED_SECRET=mysecretpassword -d gtmanfred/saltstack
+$ docker run --name salt --hostname salt -P -e SALT_SHARED_SECRET=mysecretpassword -d saltstack/salt
 ```
 
 The default `salt` user is created but the shared secret is specified in the `/etc/salt/master.d/api.conf`.
