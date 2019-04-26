@@ -1,16 +1,23 @@
 sudo: false
-services:
-- docker
 language: python
 cache: pip
 services:
 - docker
 
 install:
-- poetry install
+- make install
+
+env:
+- TMPDIR=/home/travis/build/saltstack/saltdocker
 
 python:
 - '3.7-dev'
 
 script:
-- python -m saltdocker
+- make build
+
+deploy:
+  provider: script
+  script: make push
+  on:
+    branch: master
