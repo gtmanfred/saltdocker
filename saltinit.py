@@ -42,7 +42,7 @@ async def main():
 
         if 'SALT_MASTER_CONFIG' in os.environ:
             with open('/etc/salt/master.d/master.conf', 'w') as masterfile:
-                json.dump(json.loads(os.environ['SALT_API_CONFIG']), masterfile)
+                json.dump(json.loads(os.environ['SALT_MASTER_CONFIG']), masterfile)
         with open('/etc/salt/master.d/user.conf', 'w') as userfile:
             json.dump({'user': 'salt'}, userfile)
         futures.append(await asyncio.create_subprocess_exec('salt-api'))
