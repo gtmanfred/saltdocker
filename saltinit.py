@@ -8,8 +8,8 @@ import signal
 async def main():
     futures = []
     if 'SALT_MINION_CONFIG' in os.environ:
-        with open('/etc/salt/minion.d/api.conf', 'w') as apifile:
-            json.dump(json.loads(os.environ['SALT_API_CONFIG']), apifile)
+        with open('/etc/salt/minion.d/minion.conf', 'w') as minion_file:
+            json.dump(json.loads(os.environ['SALT_MINION_CONFIG']), minion_file)
         futures.append(await asyncio.create_subprocess_exec('salt-minion'))
     else:
         if not os.path.exists('/etc/salt/master.d/api.conf'):
