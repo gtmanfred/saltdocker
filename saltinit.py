@@ -11,6 +11,15 @@ async def main():
         with open('/etc/salt/minion.d/minion.conf', 'w') as minion_file:
             json.dump(json.loads(os.environ['SALT_MINION_CONFIG']), minion_file)
         futures.append(await asyncio.create_subprocess_exec('salt-minion'))
+    elif 'SALT_PROXY_ID' in os.environ or 'SALT_PROXY_CONFIG' in os.environ:
+        if 'SALT_PROXY_CONFIG' in os.environ:
+            with open('/etc/salt/proxy.d/proxy.conf', 'w') as proxy_file:
+                json.dump(json.loads(os.environ['SALT_PROXY_CONFIG']), proxy_file)
+        if 'SALT_PROXY_ID' in os.environ:
+            futures.append(await asyncio.create_subprocess_exec('salt-proxy',
+                                                                f'--proxyid={os.environ["SALT_PROXY_ID"]}'))
+        else:
+            futures.append(await asyncio.create_subprocess_exec('salt-proxy'))
     else:
         if not os.path.exists('/etc/salt/master.d/api.conf'):
             with open('/etc/salt/master.d/api.conf', 'w') as apifile:
