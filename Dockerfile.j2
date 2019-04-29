@@ -8,7 +8,7 @@ RUN addgroup -S salt && adduser -SD -G salt salt && \
     chgrp -R salt /etc/pki /etc/salt /var/cache/salt /var/log/salt /var/run/salt
 
 ENTRYPOINT ["/usr/bin/dumb-init"]
-CMD ["--", "/usr/local/bin/saltinit"]
+CMD ["/usr/local/bin/saltinit"]
 ADD saltinit.py /usr/local/bin/saltinit
 EXPOSE 8000
 
