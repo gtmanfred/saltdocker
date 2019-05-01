@@ -12,7 +12,8 @@ from saltdocker import SaltVersion
 
 @pytest.fixture
 def date():
-    return datetime.datetime.utcnow().strftime('%Y%m%d')
+    with open('.lastbuild') as lastbuild:
+        return json.load(lastbuild)['lastbuild']
 
 
 @pytest.fixture

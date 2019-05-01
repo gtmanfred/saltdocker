@@ -58,3 +58,7 @@ If this environment variable is set, it will set the sharedsecret variable for u
 ## Salt Wheel Modules
 
 If the salt-master is not configured immediately at the start, the master config can be updated using wheel modules via the salt api using the [Salt Config Wheel Module](https://docs.saltstack.com/en/latest/ref/wheel/all/salt.wheel.config.html)
+
+## Volumes for Salt Keys
+
+In order to make volumes available to the `salt` user in the container, assign the group id `450` to the directory before it mounting it on the container.
