@@ -79,7 +79,6 @@ class SaltVersion(object):
 
     @classmethod
     async def build_salt_images(cls, push=False):
-        cls.push = push
         async with aiohttp.ClientSession() as session:
             async with session.get('https://pypi.org/pypi/salt/json') as response:
                 cls.data = await response.json()
