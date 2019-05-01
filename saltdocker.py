@@ -20,7 +20,7 @@ class SaltVersion(object):
 
     loop = asyncio.get_event_loop()
     versions = []
-    date = datetime.datetime.utcnow().strftime("%Y%m%d")
+    date = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
 
     def __init__(self, version):
         self.version = version
