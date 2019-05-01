@@ -21,10 +21,17 @@ class SaltVersion(object):
 
     loop = asyncio.get_event_loop()
     versions = []
-    date = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
+    _date = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
 
     def __init__(self, version):
         self.version = version
+
+    @property
+    def date(self):
+        if os.path.isfile('.lastbuild'):
+            with open('.lastbuild') as lastbuild:
+                SaltVersion._date = json.load(lastbuild)['lastbuild']
+        return SaltVersion._date
 
     async def build(self, force=False, latest=False):
         try:
