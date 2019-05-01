@@ -2,6 +2,7 @@
 import asyncio
 import datetime
 import distutils.version
+import json
 import os
 import signal
 import tempfile
@@ -20,7 +21,7 @@ class SaltVersion(object):
 
     loop = asyncio.get_event_loop()
     versions = []
-    date = datetime.datetime.utcnow().strftime("%Y%m%d")
+    date = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
 
     def __init__(self, version):
         self.version = version
@@ -86,7 +87,7 @@ class SaltVersion(object):
         if push is False:
             for idx, version in enumerate(versions):
                 if idx == 0:
-                    await SaltVersion(version).build(force=True)
+                    await cls(version).build(force=True)
                 else:
                     latest = version == versions[-1]
                     cls.versions.append(cls.loop.create_task(cls(version).build(latest=latest)))
@@ -104,6 +105,8 @@ def main(push):
     for signame in {'SIGINT', 'SIGTERM'}:
         loop.add_signal_handler(getattr(signal, signame), loop.stop)
     try:
+        with open('.lastbuild', 'w') as lastbuild:
+            json.dump({'lastbuild': SaltVersion.date}, lastbuild)
         loop.run_until_complete(SaltVersion.build_salt_images(push=push))
     finally:
         loop.close()
