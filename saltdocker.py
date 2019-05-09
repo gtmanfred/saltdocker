@@ -26,6 +26,10 @@ class SaltVersion(object):
     def __init__(self, version):
         self.version = version
 
+    @property
+    def shortversion(self):
+        return '.'.join(map(str, self.version.version[:2]))
+
     @classmethod
     def date(self, setting=False):
         if os.path.isfile('.lastbuild') and setting == False:
@@ -54,6 +58,7 @@ class SaltVersion(object):
                 ])
 
             args.extend([
+                '--tag', f'saltstack/salt:{self.shortversion}',
                 '--tag', f'saltstack/salt:{self.version}',
                 '--tag', f'saltstack/salt:{self.version}-{self.date()}',
                 PATH
@@ -67,7 +72,12 @@ class SaltVersion(object):
             os.unlink(tmpfile[1])
 
     async def push(self, latest=False):
-        for tag in [f'saltstack/salt:{self.version}', f'saltstack/salt:{self.version}-{self.date()}', 'saltstack/salt:latest']:
+        for tag in [
+                f'saltstack/salt:{self.shortversion}',
+                f'saltstack/salt:{self.version}',
+                f'saltstack/salt:{self.version}-{self.date()}',
+                'saltstack/salt:latest'
+        ]:
             if tag == 'latest' and latest is not True:
                 continue
             proc = await asyncio.create_subprocess_exec('docker', 'push', tag)
@@ -112,8 +122,9 @@ def main(push):
     for signame in {'SIGINT', 'SIGTERM'}:
         loop.add_signal_handler(getattr(signal, signame), loop.stop)
     try:
-        with open('.lastbuild', 'w') as lastbuild:
-            json.dump({'lastbuild': SaltVersion.date(setting=True)}, lastbuild)
+        if push is False:
+            with open('.lastbuild', 'w') as lastbuild:
+                json.dump({'lastbuild': SaltVersion.date(setting=True)}, lastbuild)
         loop.run_until_complete(SaltVersion.build_salt_images(push=push))
     finally:
         loop.close()
