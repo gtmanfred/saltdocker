@@ -12,7 +12,7 @@ from saltdocker import SaltVersion
 
 @pytest.fixture
 def date():
-    return SaltVersion('2017.7.8').date
+    return SaltVersion.date()
 
 
 @pytest.fixture
