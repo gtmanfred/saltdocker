@@ -14,5 +14,4 @@ EXPOSE 4505 4506 8000
 VOLUME /etc/salt/pki/
 
 RUN pip3 install --no-cache-dir salt=={{salt_version}} pycryptodomex CherryPy
-USER salt
-RUN salt-run salt.cmd tls.create_self_signed_cert
+RUN su - salt -c 'salt-run salt.cmd tls.create_self_signed_cert'
