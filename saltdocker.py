@@ -71,13 +71,16 @@ class SaltVersion(object):
             os.chdir(cwd)
             os.unlink(tmpfile[1])
 
-    async def push(self, latest=False):
+    async def push(self, latest=False, dryrun=True):
         for tag in [
                 f'saltstack/salt:{self.shortversion}',
                 f'saltstack/salt:{self.version}',
                 f'saltstack/salt:{self.version}-{self.date()}',
                 'saltstack/salt:latest'
         ]:
+            print(tag)
+            if dryrun is True:
+                continue
             if tag == 'latest' and latest is not True:
                 continue
             proc = await asyncio.create_subprocess_exec('docker', 'push', tag)
@@ -96,7 +99,7 @@ class SaltVersion(object):
         return True
 
     @classmethod
-    async def build_salt_images(cls, push=False):
+    async def build_salt_images(cls, push=False, dryrun=True):
         async with aiohttp.ClientSession() as session:
             async with session.get('https://pypi.org/pypi/salt/json') as response:
                 cls.data = await response.json()
@@ -111,13 +114,14 @@ class SaltVersion(object):
         else:
             for idx, version in enumerate(versions):
                     latest = version == versions[-1]
-                    cls.versions.append(cls.loop.create_task(cls(version).push(latest=latest)))
+                    cls.versions.append(cls.loop.create_task(cls(version).push(latest=latest, dryrun=dryrun)))
         await asyncio.gather(*cls.versions, loop=cls.loop)
 
 
 @click.command()
 @click.option("--push", is_flag=True, help="Push to hub.docker.io")
-def main(push):
+@click.option("--dryrun", is_flag=True, help="Push to hub.docker.io")
+def main(push, dryrun):
     loop = asyncio.get_event_loop()
     for signame in {'SIGINT', 'SIGTERM'}:
         loop.add_signal_handler(getattr(signal, signame), loop.stop)
@@ -125,7 +129,7 @@ def main(push):
         if push is False:
             with open('.lastbuild', 'w') as lastbuild:
                 json.dump({'lastbuild': SaltVersion.date(setting=True)}, lastbuild)
-        loop.run_until_complete(SaltVersion.build_salt_images(push=push))
+        loop.run_until_complete(SaltVersion.build_salt_images(push=push, dryrun=dryrun))
     finally:
         loop.close()
 

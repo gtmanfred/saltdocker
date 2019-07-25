@@ -4,6 +4,7 @@ install:
 
 build:
 	poetry run python -m saltdocker
+	poetry run python -m saltdocker --push --dryrun
 	pytest
 
 push:
