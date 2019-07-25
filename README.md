@@ -2,7 +2,6 @@
 
 - [`2019.2.0`, `2019.2`, `latest`](https://github.com/saltstack/saltdocker/tree/master/Dockerfile.j2)
 - [`2018.3.4`, `2018.3`](https://github.com/saltstack/saltdocker/tree/master/Dockerfile.j2)
-- [`2017.7.8`, `2017.7`](https://github.com/saltstack/saltdocker/tree/master/Dockerfile.j2)
 
 # What is SaltStack?
 
